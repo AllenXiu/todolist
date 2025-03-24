@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { Todo, Status, Priority } from '../types/todo';
+import { Todo, Status } from '../types/todo';
 import TodoItem from './TodoItem';
 import { getTodos, deleteTodo, updateTodo } from '../services/todoService';
 import { getStatusText, getPriorityText } from '../utils/todoUtils';

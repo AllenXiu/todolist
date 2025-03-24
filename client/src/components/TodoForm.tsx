@@ -16,10 +16,6 @@ import {
   CircularProgress,
   Alert
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import zhCNLocale from 'date-fns/locale/zh-CN';
 import { createTodo, updateTodo, getTodoById } from '../services/todoService';
 import { CreateTodoDTO } from '../types/todo';
 import { getStatusText, getPriorityText } from '../utils/todoUtils';
@@ -80,15 +76,6 @@ const TodoForm: React.FC<TodoFormProps> = ({ mode }) => {
       ...prev,
       [name]: value
     }));
-  };
-
-  const handleDateChange = (value: unknown, keyboardInputValue?: string) => {
-    if (value instanceof Date && !isNaN(value.getTime())) {
-      setFormData(prev => ({
-        ...prev,
-        dueDate: value.toISOString()
-      }));
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
