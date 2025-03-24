@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Todo, CreateTodoDTO, UpdateTodoDTO } from '../types/todo';
 
 // 使用相对路径，这样无论部署在哪个端口都能正常工作
-const API_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000/api/todos':'/api/todos';
+const API_URL = process.env.REACT_APP_API_URL || '/api/todos';
 
 // 确保在发送请求前设置认证令牌
 const getAuthToken = () => {
