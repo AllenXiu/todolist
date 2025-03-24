@@ -2,8 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserDTO } from '../models/user';
 
-// JWT密钥，理想情况下应该放在环境变量中
-const JWT_SECRET = 'your_jwt_secret_key';
+// JWT密钥，从环境变量获取或使用默认值
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+
+// 打印启动信息（不包含真实密钥）
+console.log('JWT认证已配置，使用的是:', process.env.JWT_SECRET ? '环境变量密钥' : '默认密钥');
 
 // 扩展Request接口以包含用户信息
 declare global {

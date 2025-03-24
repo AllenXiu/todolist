@@ -61,48 +61,60 @@ export const createUserDTO = (user: User): UserDTO => {
 export const createUser = async (userData: CreateUserDTO): Promise<User> => {
   const db = getDb();
   
-  // 检查用户名是否已存在
-  const existingUser = db.prepare('SELECT username FROM users WHERE username = ?').get(userData.username);
-  if (existingUser) {
+  try {
+    // 检查用户名是否已存在
+    const existingUser = db.prepare('SELECT username FROM users WHERE username = ?').get(userData.username);
+    if (existingUser) {
+      throw new Error('用户名已存在');
+    }
+    
+    // 检查邮箱是否已存在
+    const existingEmail = db.prepare('SELECT email FROM users WHERE email = ?').get(userData.email);
+    if (existingEmail) {
+      throw new Error('邮箱已注册');
+    }
+    
+    // 对密码进行哈希处理
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(userData.password, salt);
+    
+    const newUser: User = {
+      id: uuidv4(),
+      username: userData.username,
+      password: hashedPassword,
+      email: userData.email,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    // 插入新用户
+    console.log('尝试插入新用户:', { ...newUser, password: '[REDACTED]' });
+    
+    try {
+      db.prepare(`
+        INSERT INTO users (id, username, password, email, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(
+        newUser.id,
+        newUser.username,
+        newUser.password,
+        newUser.email,
+        newUser.createdAt,
+        newUser.updatedAt
+      );
+      
+      console.log('用户创建成功:', newUser.username);
+      return newUser;
+    } catch (insertError: any) {
+      console.error('用户插入数据库失败:', insertError);
+      throw new Error(`数据库插入失败: ${insertError.message}`);
+    }
+  } catch (error) {
+    console.error('创建用户过程中发生错误:', error);
+    throw error;
+  } finally {
     db.close();
-    throw new Error('用户名已存在');
   }
-  
-  // 检查邮箱是否已存在
-  const existingEmail = db.prepare('SELECT email FROM users WHERE email = ?').get(userData.email);
-  if (existingEmail) {
-    db.close();
-    throw new Error('邮箱已注册');
-  }
-  
-  // 对密码进行哈希处理
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(userData.password, salt);
-  
-  const newUser: User = {
-    id: uuidv4(),
-    username: userData.username,
-    password: hashedPassword,
-    email: userData.email,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  
-  // 插入新用户
-  db.prepare(`
-    INSERT INTO users (id, username, password, email, createdAt, updatedAt)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).run(
-    newUser.id,
-    newUser.username,
-    newUser.password,
-    newUser.email,
-    newUser.createdAt,
-    newUser.updatedAt
-  );
-  
-  db.close();
-  return newUser;
 };
 
 // 验证用户密码

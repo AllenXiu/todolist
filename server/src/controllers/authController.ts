@@ -6,10 +6,12 @@ import { CreateUserDTO, LoginDTO } from '../models/user';
 // 用户注册
 export const register = async (req: Request, res: Response) => {
   try {
+    console.log('注册请求数据:', req.body);
     const userData: CreateUserDTO = req.body;
     
     // 验证请求数据
     if (!userData.username || !userData.password || !userData.email) {
+      console.log('注册数据验证失败:', userData);
       return res.status(400).json({ message: '请提供用户名、密码和邮箱' });
     }
     
@@ -22,6 +24,8 @@ export const register = async (req: Request, res: Response) => {
     // 生成JWT令牌
     const token = generateToken(userDTO);
     
+    console.log('用户注册成功:', userDTO.username);
+    
     // 返回用户信息和令牌
     res.status(201).json({
       message: '用户注册成功',
@@ -29,7 +33,8 @@ export const register = async (req: Request, res: Response) => {
       user: userDTO
     });
   } catch (error: any) {
-    console.error('用户注册失败:', error);
+    console.error('用户注册失败详情:', error);
+    console.error('错误堆栈:', error.stack);
     res.status(500).json({ message: error.message || '用户注册失败' });
   }
 };
