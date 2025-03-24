@@ -159,21 +159,26 @@ const TodoForm: React.FC<TodoFormProps> = ({ mode }) => {
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={zhCNLocale}>
-                <DatePicker
-                  label="截止日期"
-                  value={new Date(formData.dueDate)}
-                  onChange={(newValue) => {
-                    if (newValue && newValue instanceof Date && !isNaN(newValue.getTime())) {
-                      setFormData(prev => ({
-                        ...prev,
-                        dueDate: newValue.toISOString()
-                      }));
-                    }
-                  }}
-                  renderInput={(params) => <TextField {...params} fullWidth required />}
-                />
-              </LocalizationProvider>
+              <TextField
+                fullWidth
+                required
+                label="截止日期"
+                type="date"
+                name="dueDate"
+                value={new Date(formData.dueDate).toISOString().split('T')[0]}
+                onChange={(e) => {
+                  const newDate = new Date(e.target.value);
+                  if (!isNaN(newDate.getTime())) {
+                    setFormData(prev => ({
+                      ...prev,
+                      dueDate: newDate.toISOString()
+                    }));
+                  }
+                }}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
             </Grid>
             
             <Grid item xs={12} sm={6}>
