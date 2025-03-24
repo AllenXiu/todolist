@@ -9,6 +9,7 @@
 - 搜索待办事项
 - 响应式设计，同时支持电脑和手机
 - 使用JSON文件存储数据，易于部署和使用
+- 完整的中文界面支持
 
 ## 系统详细介绍
 
@@ -25,14 +26,17 @@
 - **响应式布局**：完美适配电脑和移动设备
 - **直观操作**：简洁的用户界面，易于使用
 - **实时反馈**：操作后立即显示结果
+- **中文本地化**：界面完全中文化，包括日期选择器和状态展示
 
 ## 技术栈
 
 ### 前端
-- React
+- React 18
 - TypeScript
-- React Router
-- Material UI
+- React Router v6
+- Material UI v5
+- MUI X Date Pickers
+- date-fns（含中文本地化支持）
 - Axios
 
 ### 后端
@@ -84,9 +88,17 @@ todo-list/
 │   ├── public/
 │   └── src/
 │       ├── components/   # React组件
+│       │   ├── TodoList.tsx   # 待办事项列表组件
+│       │   ├── TodoForm.tsx   # 待办事项创建/编辑表单组件
+│       │   ├── TodoDetail.tsx # 待办事项详情组件
+│       │   └── TodoItem.tsx   # 待办事项项目组件
 │       ├── services/     # API服务
+│       │   └── todoService.ts # 待办事项API服务
 │       ├── types/        # TypeScript类型定义
-│       └── utils/        # 工具函数
+│       │   └── todo.ts   # 待办事项相关类型定义
+│       ├── utils/        # 工具函数
+│       │   └── todoUtils.ts # 待办事项工具函数
+│       └── contexts/     # React上下文
 ├── server/               # 后端Express应用
 │   ├── data/             # JSON数据存储目录
 │   └── src/
@@ -96,15 +108,40 @@ todo-list/
 └── package.json          # 根项目配置
 ```
 
+## 组件详情
+
+### TodoForm组件
+TodoForm是一个多功能组件，用于创建新的待办事项或编辑现有待办事项。
+
+**主要特性：**
+- 支持两种模式：创建模式和编辑模式
+- 在编辑模式下自动加载现有待办事项数据
+- 表单验证确保必填字段不为空
+- 使用Material UI组件提供美观的用户界面
+- 完整的中文本地化支持，包括表单标签和日期选择器
+- 错误处理和加载状态显示
+- 响应式设计，适配不同屏幕尺寸
+
+**字段说明：**
+- 名称：待办事项的标题（必填）
+- 描述：详细说明（可选）
+- 截止日期：任务完成期限（必填）
+- 优先级：低、中、高（必填）
+- 分类：用户自定义分类（必填）
+- 状态：未开始、进行中、已完成（必填）
+
 ## 待办事项数据结构
 
 每个待办事项包含以下信息：
-- 名称
-- 描述
-- 截止日期
-- 优先级（低、中、高）
-- 分类
-- 状态（未开始、进行中、已完成）
+- 名称（name）
+- 描述（description）
+- 截止日期（dueDate）
+- 优先级（priority）：低（low）、中（medium）、高（high）
+- 分类（category）
+- 状态（status）：未开始（not_started）、进行中（in_progress）、已完成（completed）
+- 创建时间（createdAt）
+- 更新时间（updatedAt）
+- ID（id）：唯一标识符
 
 ## 部署说明
 
