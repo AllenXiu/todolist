@@ -4,6 +4,11 @@ import { authenticate } from '../middleware/auth';
 
 const router = express.Router();
 
+// 健康检查端点，用于Docker容器健康检查
+router.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // 用户注册
 router.post('/register', register as RequestHandler);
 

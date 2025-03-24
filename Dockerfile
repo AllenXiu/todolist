@@ -32,14 +32,21 @@ COPY --from=build /app/client/build ./client/build
 COPY --from=build /app/server/dist ./server/dist
 COPY --from=build /app/server/package*.json ./server/
 
+# 复制数据库初始化脚本和启动脚本
+COPY --from=build /app/server/init-db.js ./server/
+COPY --from=build /app/server/start.sh ./server/
+
+# 给启动脚本添加执行权限
+RUN chmod +x ./server/start.sh
+
 # 安装生产环境依赖
 RUN cd server && npm ci --production
 
-# 创建数据存储目录
-RUN mkdir -p server/data
+# 创建数据存储目录并设置权限
+RUN mkdir -p server/data && chmod 777 server/data
 
 # 暴露端口
 EXPOSE 5000
 
-# 启动命令
-CMD ["node", "server/dist/index.js"] 
+# 启动命令，使用脚本先初始化数据库再启动服务
+CMD ["/bin/sh", "server/start.sh"] 
