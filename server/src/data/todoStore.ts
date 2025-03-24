@@ -1,42 +1,59 @@
-import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import Database from 'better-sqlite3';
 import { Todo, CreateTodoDTO, UpdateTodoDTO } from '../models/todo';
 
-const DATA_FILE = path.join(__dirname, '../../data/todos.json');
+const DB_PATH = path.join(__dirname, '../../data/todos.db');
 
-// 确保数据目录存在
-const ensureDataDir = () => {
-  const dataDir = path.dirname(DATA_FILE);
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
+// 初始化数据库
+const initializeDatabase = () => {
+  const db = new Database(DB_PATH);
+  
+  // 创建待办事项表
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS todos (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT,
+      dueDate TEXT,
+      priority TEXT CHECK(priority IN ('low', 'medium', 'high')),
+      category TEXT,
+      status TEXT CHECK(status IN ('not_started', 'in_progress', 'completed')),
+      createdAt TEXT,
+      updatedAt TEXT
+    )
+  `);
+  
+  return db;
 };
 
-// 确保数据文件存在
-const ensureDataFile = () => {
-  ensureDataDir();
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2));
-  }
+// 获取数据库连接
+const getDb = () => {
+  return new Database(DB_PATH);
 };
+
+// 初始化数据库
+initializeDatabase();
 
 // 读取所有待办事项
 export const getAllTodos = (): Todo[] => {
-  ensureDataFile();
-  const data = fs.readFileSync(DATA_FILE, 'utf8');
-  return JSON.parse(data);
+  const db = getDb();
+  const todos = db.prepare('SELECT * FROM todos').all() as Todo[];
+  db.close();
+  return todos;
 };
 
 // 获取单个待办事项
 export const getTodoById = (id: string): Todo | undefined => {
-  const todos = getAllTodos();
-  return todos.find(todo => todo.id === id);
+  const db = getDb();
+  const todo = db.prepare('SELECT * FROM todos WHERE id = ?').get(id) as Todo | undefined;
+  db.close();
+  return todo;
 };
 
 // 创建新待办事项
 export const createTodo = (todoData: CreateTodoDTO): Todo => {
-  const todos = getAllTodos();
+  const db = getDb();
   
   const newTodo: Todo = {
     id: uuidv4(),
@@ -46,42 +63,88 @@ export const createTodo = (todoData: CreateTodoDTO): Todo => {
     updatedAt: new Date().toISOString()
   };
   
-  todos.push(newTodo);
-  fs.writeFileSync(DATA_FILE, JSON.stringify(todos, null, 2));
+  db.prepare(`
+    INSERT INTO todos (id, name, description, dueDate, priority, category, status, createdAt, updatedAt)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    newTodo.id,
+    newTodo.name,
+    newTodo.description,
+    newTodo.dueDate,
+    newTodo.priority,
+    newTodo.category,
+    newTodo.status,
+    newTodo.createdAt,
+    newTodo.updatedAt
+  );
   
+  db.close();
   return newTodo;
 };
 
 // 更新待办事项
 export const updateTodo = (id: string, todoData: UpdateTodoDTO): Todo | null => {
-  const todos = getAllTodos();
-  const todoIndex = todos.findIndex(todo => todo.id === id);
+  const db = getDb();
   
-  if (todoIndex === -1) {
+  // 检查待办事项是否存在
+  const existingTodo = db.prepare('SELECT * FROM todos WHERE id = ?').get(id) as Todo | undefined;
+  
+  if (!existingTodo) {
+    db.close();
     return null;
   }
   
   const updatedTodo: Todo = {
-    ...todos[todoIndex],
+    ...existingTodo,
     ...todoData,
     updatedAt: new Date().toISOString()
   };
   
-  todos[todoIndex] = updatedTodo;
-  fs.writeFileSync(DATA_FILE, JSON.stringify(todos, null, 2));
+  // 构建更新语句
+  const updateValues = [];
+  const updateFields = [];
   
+  // 处理可能的更新字段
+  Object.entries(todoData).forEach(([key, value]) => {
+    if (value !== undefined) {
+      updateFields.push(`${key} = ?`);
+      updateValues.push(value);
+    }
+  });
+  
+  // 添加更新时间
+  updateFields.push('updatedAt = ?');
+  updateValues.push(updatedTodo.updatedAt);
+  
+  // 添加ID作为WHERE条件
+  updateValues.push(id);
+  
+  // 执行更新
+  db.prepare(`
+    UPDATE todos
+    SET ${updateFields.join(', ')}
+    WHERE id = ?
+  `).run(...updateValues);
+  
+  db.close();
   return updatedTodo;
 };
 
 // 删除待办事项
 export const deleteTodo = (id: string): boolean => {
-  const todos = getAllTodos();
-  const filteredTodos = todos.filter(todo => todo.id !== id);
+  const db = getDb();
   
-  if (filteredTodos.length === todos.length) {
+  // 检查待办事项是否存在
+  const existingTodo = db.prepare('SELECT id FROM todos WHERE id = ?').get(id);
+  
+  if (!existingTodo) {
+    db.close();
     return false;
   }
   
-  fs.writeFileSync(DATA_FILE, JSON.stringify(filteredTodos, null, 2));
+  // 执行删除
+  db.prepare('DELETE FROM todos WHERE id = ?').run(id);
+  
+  db.close();
   return true;
 }; 

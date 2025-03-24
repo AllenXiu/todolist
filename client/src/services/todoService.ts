@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Todo, CreateTodoDTO, UpdateTodoDTO } from '../types/todo';
 
 // 使用相对路径，这样无论部署在哪个端口都能正常工作
-const API_URL = '/api/todos';
+const API_URL = process.env.REACT_APP_DOCKER_MODE === 'true' ? '/api/todos' : 'http://localhost:5000/api/todos';
 
 export const getTodos = async (): Promise<Todo[]> => {
   const response = await axios.get(API_URL);

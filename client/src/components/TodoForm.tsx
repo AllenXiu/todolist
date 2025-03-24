@@ -82,11 +82,11 @@ const TodoForm: React.FC<TodoFormProps> = ({ mode }) => {
     }));
   };
 
-  const handleDateChange = (date: Date | null) => {
-    if (date) {
+  const handleDateChange = (value: unknown, keyboardInputValue?: string) => {
+    if (value instanceof Date && !isNaN(value.getTime())) {
       setFormData(prev => ({
         ...prev,
-        dueDate: date.toISOString()
+        dueDate: value.toISOString()
       }));
     }
   };
@@ -163,13 +163,15 @@ const TodoForm: React.FC<TodoFormProps> = ({ mode }) => {
                 <DatePicker
                   label="截止日期"
                   value={new Date(formData.dueDate)}
-                  onChange={handleDateChange}
-                  slotProps={{ 
-                    textField: { 
-                      fullWidth: true,
-                      required: true
-                    } 
+                  onChange={(newValue) => {
+                    if (newValue && newValue instanceof Date && !isNaN(newValue.getTime())) {
+                      setFormData(prev => ({
+                        ...prev,
+                        dueDate: newValue.toISOString()
+                      }));
+                    }
                   }}
+                  renderInput={(params) => <TextField {...params} fullWidth required />}
                 />
               </LocalizationProvider>
             </Grid>
