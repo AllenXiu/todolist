@@ -36,8 +36,14 @@ const TodoList: React.FC = () => {
       const data = await getTodos();
       setTodos(data);
       setError(null);
-    } catch (err) {
-      setError('获取待办事项失败，请稍后重试');
+    } catch (err: any) {
+      if (err.message === '未登录或会话已过期') {
+        setError('请先登录以查看您的待办事项');
+      } else if (err.response?.status === 401) {
+        setError('您的登录已过期，请重新登录');
+      } else {
+        setError('获取待办事项失败，请稍后重试');
+      }
       console.error('获取待办事项错误:', err);
     } finally {
       setLoading(false);

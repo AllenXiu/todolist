@@ -3,6 +3,7 @@ export type Status = 'not_started' | 'in_progress' | 'completed';
 
 export interface Todo {
   id: string;
+  userId: string; // 关联到用户ID
   name: string;
   description: string;
   dueDate: string; // ISO 日期字符串
@@ -20,6 +21,7 @@ export interface CreateTodoDTO {
   priority: Priority;
   category: string;
   status?: Status;
+  userId: string; // 关联到用户ID
 }
 
 export interface UpdateTodoDTO {

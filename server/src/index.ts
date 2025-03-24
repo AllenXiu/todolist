@@ -2,7 +2,28 @@ import express, { RequestHandler } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import path from 'path';
+import cookieParser from 'cookie-parser';
 import todosRouter from './routes/todos';
+import authRouter from './routes/auth';
+import { initializeUserTable } from './data/userStore';
+import { initializeTodoTable } from './data/todoStore';
+
+// 初始化数据库
+const initializeDatabase = async () => {
+  // 1. 首先初始化用户表
+  await initializeUserTable();
+  // 2. 然后初始化待办事项表（依赖于用户表）
+  await initializeTodoTable();
+};
+
+// 确保数据库表存在
+initializeDatabase()
+  .then(() => {
+    console.log('数据库初始化成功');
+  })
+  .catch(error => {
+    console.error('数据库初始化失败:', error);
+  });
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '5000', 10);
@@ -19,9 +40,11 @@ const corsOptions = {
 // 中间件
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../../client/build')));
 
 // API 路由
+app.use('/api/auth', authRouter);
 app.use('/api/todos', todosRouter);
 
 // 处理前端路由

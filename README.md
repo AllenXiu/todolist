@@ -1,6 +1,6 @@
 # 待办事项管理系统
 
-一个使用React、Express和JSON存储的待办事项（Todo List）管理系统，支持电脑端和手机端。
+一个使用React、Express和SQLite数据库的待办事项（Todo List）管理系统，支持电脑端和手机端。
 
 ## 功能特点
 
@@ -8,7 +8,7 @@
 - 按状态、优先级和分类筛选待办事项
 - 搜索待办事项
 - 响应式设计，同时支持电脑和手机
-- 使用JSON文件存储数据，易于部署和使用
+- 使用SQLite数据库存储数据，易于部署和使用
 - 完整的中文界面支持
 
 ## 系统详细介绍
@@ -43,7 +43,7 @@
 - Node.js
 - Express
 - TypeScript
-- JSON文件存储
+- SQLite（使用better-sqlite3）
 
 ## 运行项目
 
@@ -97,13 +97,16 @@ todo-list/
 │       ├── types/        # TypeScript类型定义
 │       │   └── todo.ts   # 待办事项相关类型定义
 │       ├── utils/        # 工具函数
-│       │   └── todoUtils.ts # 待办事项工具函数
 │       └── contexts/     # React上下文
 ├── server/               # 后端Express应用
-│   ├── data/             # JSON数据存储目录
+│   ├── data/             # SQLite数据库文件目录
 │   └── src/
 │       ├── data/         # 数据访问层
+│       │   └── todoStore.ts  # 数据库操作逻辑
 │       ├── models/       # 数据模型
+│       │   └── todo.ts   # 待办事项模型定义
+│       ├── controllers/  # 控制器层
+│       ├── middleware/   # 中间件
 │       └── routes/       # API路由
 └── package.json          # 根项目配置
 ```
@@ -181,7 +184,7 @@ docker-compose down
 - `NODE_ENV`：运行环境，可选值为development或production
 
 ## 数据持久化
-所有待办事项数据以JSON文件形式存储在`server/data`目录下。使用Docker部署时，数据通过卷(volume)进行持久化保存。
+所有待办事项数据以SQLite数据库文件形式存储在`server/data`目录下。使用Docker部署时，数据通过卷(volume)进行持久化保存。
 
 ## API文档
 
