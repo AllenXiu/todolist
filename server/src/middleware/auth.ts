@@ -20,11 +20,15 @@ declare global {
 
 // 生成JWT令牌
 export const generateToken = (user: UserDTO): string => {
-  return jwt.sign(
-    { id: user.id, username: user.username, email: user.email },
-    JWT_SECRET,
-    { expiresIn: TOKEN_EXPIRY }
-  );
+  const payload = { 
+    id: user.id, 
+    username: user.username, 
+    email: user.email 
+  };
+  
+  return jwt.sign(payload, JWT_SECRET, { 
+    expiresIn: TOKEN_EXPIRY 
+  } as jwt.SignOptions);
 };
 
 // 验证身份中间件

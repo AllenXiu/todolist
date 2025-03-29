@@ -26,6 +26,9 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+# 安装wget用于健康检查
+RUN apk add --no-cache wget
+
 # 复制构建结果
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/client/build ./client/build
@@ -47,6 +50,10 @@ RUN mkdir -p server/data && chmod 777 server/data
 
 # 暴露端口
 EXPOSE 5000
+
+# 设置环境变量
+ENV NODE_ENV=production
+ENV PORT=5000
 
 # 启动命令，使用脚本先初始化数据库再启动服务
 CMD ["/bin/sh", "server/start.sh"] 

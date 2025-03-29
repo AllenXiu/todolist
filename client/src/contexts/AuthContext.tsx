@@ -178,7 +178,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // 组件挂载时加载用户
   useEffect(() => {
     loadUser();
-  }, []);
+  }, [loadUser]);
 
   return (
     <AuthContext.Provider value={{ authState, register, login, logout, clearError }}>
